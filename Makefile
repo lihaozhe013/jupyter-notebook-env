@@ -1,4 +1,6 @@
 # --- Configuration Variables ---
+IP_ADDRESS := $(shell hostname -I | awk '{print $$1}')
+
 # The port you want to access Jupyter on
 PORT := 9999
 
@@ -12,6 +14,8 @@ PYTHON := python
 
 .PHONY: help install run clean
 
+default: run
+
 help:
 	@echo "Available commands:"
 	@echo "  make install  - Install JupyterLab globally (System scope)"
@@ -20,24 +24,30 @@ help:
 
 install:
 	@echo "Installing JupyterLab to global environment..."
-	$(PYTHON) -m pip install jupyterlab
+	$(PYTHON) -m pip install jupyterlab numpy matplotlib scipy scikit-learn pytorch torchvision
 
 run:
 	@echo "Starting JupyterLab on port $(PORT)..."
-	@echo "Access URL: http://localhost:$(PORT)/lab?token=$(TOKEN)"
+	@echo "Access URL: http://$(IP_ADDRESS):$(PORT)/lab?token=$(TOKEN)"
 	@# Flags explanation:
 	@# --no-browser: Prevent auto-opening the browser
 	@# --port: Specify the port
-	@# --ip: Bind to localhost (127.0.0.1) for security
+	@# --ip: Bind to $(IP_ADDRESS) for security
 	@# --notebook-dir: Force root to current directory
 	@# --NotebookApp.token: Hardcode token for easy access
+	@# --ServerApp.iopub_msg_rate_limit / --ServerApp.rate_limit_window: increase output rate limits
 	jupyter lab \
 		--no-browser \
 		--port=$(PORT) \
-		--ip=127.0.0.1 \
+		--ip=0.0.0.0 \
 		--notebook-dir="." \
+		--ServerApp.iopub_msg_rate_limit=100000 \
+		--ServerApp.rate_limit_window=10 \
+		--NotebookApp.iopub_msg_rate_limit=100000 \
+		--NotebookApp.rate_limit_window=10 \
 		--NotebookApp.token='$(TOKEN)' \
-		--NotebookApp.password=''
+		--NotebookApp.password='' \
+		--allow-root
 
 clean:
 	@echo "Cleaning up runtime artifacts..."
@@ -45,3 +55,6 @@ clean:
 	-rm -rf **/ .ipynb_checkpoints
 	-rm -rf __pycache__
 	-rm -rf **/__pycache__
+
+sh:
+	docker compose exec app bash
