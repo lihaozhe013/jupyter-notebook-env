@@ -7,9 +7,6 @@ PORT := 9999
 # The security token for login (leave empty to generate random)
 TOKEN := mysecret
 
-# Python Interpreter (Change to 'python3' if needed)
-PYTHON := python
-
 # --- Commands ---
 
 .PHONY: help install run clean

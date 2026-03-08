@@ -1,5 +1,0 @@
-notebook
-numpy
-pandas
-matplotlib
-psycopg2-binary

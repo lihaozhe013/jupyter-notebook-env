@@ -1,4 +1,5 @@
 FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
@@ -14,7 +15,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     htop \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-RUN pip install --upgrade pip
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-CMD ["python"]
+ENV PATH="/app/.venv/bin:$PATH"
+COPY pyproject.toml uv.lock /app/
+RUN uv sync
